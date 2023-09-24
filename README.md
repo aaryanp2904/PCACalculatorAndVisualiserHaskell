@@ -2,7 +2,7 @@
 
 ## Editing and trying out the code 
 
-First, remember to have hmatrix on your system. You can do this two ways, one happened to work for me the other didn't - I was using WSL. 
+First, remember to have hmatrix on your system. You need to install some packages, you can do ths using stack or cabal. Try either one to see which works.
 
 ### Stack method
 
@@ -25,6 +25,11 @@ The method that worked for me was:
 `stack update`
 `stack install hmatrix`
 
+I already had cabal installed but doing the method below threw some errors for me. You can try this if you want:
+
+`cabal update`
+`cabal install hmatrix`
+
 5. Check you have it using
 
 `stack ghci`
@@ -32,12 +37,13 @@ The method that worked for me was:
 
 This shouldn't throw any errors.
 
-### Cabal method
+6. Similarly, get Chart, Chart-diagrams and cassava using either stack or cabal
 
-I already had cabal installed but doing this threw some errors for me. You can try this if you want:
+`cabal install Chart-diagrams`
+`cabal install Chart`
+`cabal install cassava`
 
-`cabal update`
-`cabal install hmatrix`
+To install using stack simply replace `cabal` with `stack`.
 
 
 ## Running the code

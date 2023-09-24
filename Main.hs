@@ -6,9 +6,12 @@ import Eigen
 import Graphics.Gnuplot.Simple
 import Graphics.Gnuplot.Terminal.Default
 import Control.Monad (void)
-
+import qualified Data.ByteString.Lazy as BL
+import Data.Csv
 import Graphics.Rendering.Chart.Easy
+import qualified Graphics.Rendering.Chart.Easy as GRE
 import Graphics.Rendering.Chart.Backend.Diagrams
+import Data.List.Split
 
 pca:: [[Double]] -> [[Double]]
 pca dataPoints 
@@ -16,7 +19,7 @@ pca dataPoints
   | otherwise = res
   where covMat = getStandardizedCovarianceMatrix dataPoints
         (eigenvalsvec, eigenvecsmat) = eig covMat
-        eigenvals = map realPart (toList eigenvalsvec)
+        eigenvals = map realPart (LA.toList eigenvalsvec)
         eigenvecs = [map realPart ev | ev <- (toLists (tr eigenvecsmat))]
         (removedVals, removedVecs) = removeSmallestEigen eigenvals eigenvecs
         removedVecsMat = fromLists removedVecs
@@ -26,11 +29,26 @@ pca dataPoints
 
 scatterPlot :: [[Double]] -> Renderable()
 scatterPlot dps = toRenderable $ do
-  layout_title .= "Scatter Plot"
+  layout_title GRE..= "Scatter Plot"
   plot $ points "Data" (zip (dps !! 0) (dps !! 1))
+
+getFileData:: String -> [[Double]]
+getFileData content = toLists datasetMatrixGroupedByColumn
+  where 
+    dataByRows = map (splitOn ",") $ lines (content)
+    dataByRowsDouble = map convList dataByRows
+    datasetMatrixGroupedByColumn = tr (fromLists dataByRowsDouble)
+        
+convList:: [String] -> [Double]
+convList [] = []
+convList [""] = []
+convList xs = map (\x -> (read x :: Double)) xs
 
 main::IO()
 main = do
-  let chart = scatterPlot
-  let transformed = pca [[10, 5, 4, 11, 6, 12, 19, 11, 20, 21, 18, 6, 19], [102,160,163,99,168,106,251,105,263,231,205,157,104], [-11, -35, -34, -9, -30, -9, 12, -8, 15, 8, 11, -31, -5]]
-  void $ renderableToFile def "scatter_plot.svg" (chart transformed)
+  putStrLn "Enter csv file: "
+  fileName <- getLine
+  content <- readFile fileName
+  let valuesInt = getFileData content
+  let transformed = pca valuesInt
+  void $ renderableToFile def "scatter_plot.svg" (scatterPlot transformed)
